@@ -41,7 +41,7 @@ sbcli -lZ "$PUB_LINKS" -o "$PUB_OUTBOUNDS"
 "$SINGBOX_DIR/outbounds-tags.py" -i "$PUB_SUPER_SELECTORS" -o "$PUB_SUPER_SELECTORS_TAGS" -v
 "$SINGBOX_DIR/tor-socks-outbounds.py" -n "$TOR_COUNT" -p "$TOR_PORT" -o "$PUB_TOR" -v
 "$SINGBOX_DIR/outbounds-tags.py" -i "$PUB_TOR" -o "$PUB_TOR_TAGS" -v
-"$SINGBOX_DIR/setup-conf.py" --host "$SERVER_HOST" --super-selector-tags "$PUB_SUPER_SELECTORS_TAGS" --tor-tags "$PUB_TOR_TAGS" --output "$CONFIG" --links "$LINKS" -v
+"$SINGBOX_DIR/setup-conf.py" "$SERVER_HOST" --super-selector-tags "$PUB_SUPER_SELECTORS_TAGS" --tor-tags "$PUB_TOR_TAGS" --output "$CONFIG" --links "$LINKS" -v
 
 for f in "${OUTBOUNDS_FILES[@]}"; do
     jq '{outbounds: .}' "$f" > "$OUT_DIR/$(basename "$f")"
