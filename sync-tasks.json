@@ -1,0 +1,6 @@
+[
+    {
+        "cmd": "echo hello",
+        "repeat": "5s"
+    }
+]

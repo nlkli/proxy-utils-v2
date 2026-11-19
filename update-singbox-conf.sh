@@ -55,4 +55,8 @@ for dir in "${CONFIG_DIRS[@]}"; do
 done
 sing-box check "${CHECK_ARGS[@]}"
 
-echo "stub"
+sudo systemctl restart sing-box.service
+
+rm -f "$DATA_DIR/best-selector-cache.json"
+
+./singbox-select-best.sh
