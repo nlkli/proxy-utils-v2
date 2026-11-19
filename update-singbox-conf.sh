@@ -57,6 +57,8 @@ sing-box check "${CHECK_ARGS[@]}"
 
 sudo systemctl restart sing-box.service
 
+sleep 10
+
 rm -f "$DATA_DIR/best-selector-cache.json"
 
 ./singbox-select-best.sh

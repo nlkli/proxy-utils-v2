@@ -10,11 +10,12 @@ TIME_UNITS = {"s": 1, "m": 60, "h": 3600, "d": 86400}
 INTERVAL_RE = re.compile(r"^[1-9][0-9]*[smhd]$")
 
 
+def log(msg, file=sys.stdout):
+    print(msg, file=file, flush=True)
+
+
 def parse_interval(interval):
-    unit = interval[-1]
-    if unit not in TIME_UNITS:
-        raise ValueError(f"bad unit: {unit!r}")
-    return int(interval[:-1]) * TIME_UNITS[unit]
+    return int(interval[:-1]) * TIME_UNITS[interval[-1]]
 
 
 def is_due(last_time, interval):
@@ -24,12 +25,26 @@ def is_due(last_time, interval):
     return elapsed.total_seconds() >= parse_interval(interval)
 
 
-def process_task(task):
+def process_task(i, task):
+    """Returns True if the task ran successfully (last_time updated)."""
     if not INTERVAL_RE.match(task["repeat"]):
         raise ValueError(f"bad repeat: {task['repeat']!r}")
-    if is_due(task.get("last_time"), task["repeat"]):
-        subprocess.run(task["cmd"], shell=True, check=False)
-        task["last_time"] = datetime.now().isoformat(timespec="seconds")
+    if not is_due(task.get("last_time"), task["repeat"]):
+        return False
+
+    log(f"[task {i}] start: {task['cmd']}")
+    result = subprocess.run(task["cmd"], shell=True)  # stdout/stderr go straight to journal
+    if result.returncode != 0:
+        log(f"[task {i}] FAILED, exit code {result.returncode}", sys.stderr)
+        return False
+
+    task["last_time"] = datetime.now().isoformat(timespec="seconds")
+    log(f"[task {i}] done, exit code 0")
+    return True
+
+
+def save(path, tasks):
+    path.write_text(json.dumps(tasks, indent=2))
 
 
 def main():
@@ -40,20 +55,15 @@ def main():
     try:
         tasks = json.loads(path.read_text())
     except (OSError, json.JSONDecodeError) as e:
-        print(f"error: cannot read {path}: {e}", file=sys.stderr)
+        log(f"error: cannot read {path}: {e}", sys.stderr)
         return 1
 
     for i, task in enumerate(tasks):
         try:
-            process_task(task)
+            if process_task(i, task):
+                save(path, tasks)
         except Exception as e:
-            print(f"error: task[{i}]: {e}", file=sys.stderr)
-
-    try:
-        path.write_text(json.dumps(tasks, indent=2))
-    except OSError as e:
-        print(f"error: cannot write {path}: {e}", file=sys.stderr)
-        return 1
+            log(f"[task {i}] error: {e}", sys.stderr)
 
     return 0
 

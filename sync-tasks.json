@@ -1,6 +1,14 @@
 [
     {
-        "cmd": "echo hello",
-        "repeat": "5s"
+        "cmd": "./update-singbox-conf.sh",
+        "repeat": "18h"
+    },
+    {
+        "cmd": "./tor-setup.sh",
+        "repeat": "32h"
+    },
+    {
+        "cmd": "./singbox-select-best.sh",
+        "repeat": "30m"
     }
 ]
