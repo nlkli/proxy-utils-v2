@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-./tor/merge_lists.py ./tor/list_urls.txt \
+./tor/merge-lists.py ./tor/list_urls.txt \
     -o ./data/tor-bridge-list.txt --limit 250
 
-./tor/tor_bridge_tester.py ./data/tor-bridge-list.txt \
+./tor/tor-bridge-tester.py ./data/tor-bridge-list.txt \
     --top 200 --out ./data/tor-top-bridge.txt -v  \
     --cache-file ./data/tor-bridge-tester_cache.json \
     --workers 10 --attempts 3 --bootstrap-timeout 30 \

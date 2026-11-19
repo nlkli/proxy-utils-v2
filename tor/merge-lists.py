@@ -8,7 +8,7 @@ import tempfile
 import time
 from pathlib import Path
 
-log = logging.getLogger("merge_lists")
+log = logging.getLogger("merge-lists")
 
 
 def read_lines(path: Path) -> list[str]:

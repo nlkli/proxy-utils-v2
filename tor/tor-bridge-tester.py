@@ -49,7 +49,7 @@ from types import TracebackType
 from typing import Any, Optional, Sequence
 from urllib.parse import urlparse
 
-LOG = logging.getLogger("bridge-tester")
+LOG = logging.getLogger("tor-bridge-tester")
 
 CHECK_URL = "https://check.torproject.org/api/ip"
 DEFAULT_DOWNLOAD_URL = "https://speed.cloudflare.com/__down?bytes=1000000"
