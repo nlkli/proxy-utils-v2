@@ -181,9 +181,9 @@ def _fmt_host(host: str) -> str:
 def link_mixed(inb: dict[str, Any], host: str, user: dict[str, str], mixed_http: bool) -> list[str]:
     name = user["username"]
     auth = f"{_q(name)}:{_q(user['password'])}@{host}:{inb['listen_port']}"
-    links = [f"socks5://{auth}#{_q(name + '-mixed-socks5')}"]
+    links = [f"socks5://{auth}#{_q(name + '-socks5')}"]
     if mixed_http:
-        links.append(f"http://{auth}#{_q(name + '-mixed-http')}")
+        links.append(f"http://{auth}#{_q(name + '-http')}")
     return links
 
 
