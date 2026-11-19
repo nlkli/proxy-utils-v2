@@ -65,9 +65,8 @@ def make_inbounds(ports: dict[str, int]) -> dict[str, dict[str, Any]]:
             "tag": "g-vs-i",
             "listen": "::",
             "users": [],
-            "tls": dict(tls),
+            "tls": {**tls, "alpn": ["h2", "http/1.1"]},
             "multiplex": {"enabled": True},
-            "transport": {"type": "http", "host": ["www.dobro.ru", "dobro.ru"]},
         },
         "hysteria2": {
             "type": "hysteria2",
@@ -200,15 +199,13 @@ def link_shadowsocks(inb: dict[str, Any], host: str, user: dict[str, str], _: bo
 
 
 def link_vless(inb: dict[str, Any], host: str, user: dict[str, str], insecure: bool) -> list[str]:
-    tls, transport = inb["tls"], inb["transport"]
+    tls = inb["tls"]
     params = [
         ("encryption", "none"),
         ("security", "tls"),
         ("sni", tls["server_name"]),
         ("alpn", ",".join(tls["alpn"])),
-        ("type", transport["type"]),
-        ("host", ",".join(transport["host"])),
-        ("path", transport.get("path", "/")),
+        ("type", "tcp"),
     ]
     if insecure:
         params.append(("allowInsecure", "1"))
