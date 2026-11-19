@@ -1,0 +1,246 @@
+{
+    "log": {
+        "level": "warn"
+    },
+    "experimental": {
+        "cache_file": {
+            "enabled": true
+        },
+        "clash_api": {
+            "external_controller": "127.0.0.1:9090"
+        }
+    },
+    "dns": {
+        "servers": [
+            {
+                "type": "https",
+                "tag": "cloudflare-doh",
+                "server": "1.1.1.1",
+                "server_port": 443,
+                "path": "/dns-query",
+                "tls": {
+                    "enabled": true,
+                    "server_name": "cloudflare-dns.com"
+                }
+            },
+            {
+                "type": "https",
+                "tag": "google-doh",
+                "server": "8.8.8.8",
+                "server_port": 443,
+                "path": "/dns-query",
+                "tls": {
+                    "enabled": true,
+                    "server_name": "dns.google"
+                }
+            },
+            {
+                "type": "https",
+                "tag": "yandex-doh",
+                "server": "77.88.8.8",
+                "server_port": 443,
+                "tls": {
+                    "enabled": true,
+                    "server_name": "common.dot.dns.yandex.net"
+                }
+            }
+        ],
+        "rules": [
+            {
+                "domain_suffix": [
+                    ".ru",
+                    ".рф",
+                    ".su"
+                ],
+                "action": "route",
+                "server": "yandex-doh"
+            }
+        ],
+        "final": "cloudflare-doh",
+        "strategy": "prefer_ipv4",
+        "optimistic": {
+            "enabled": true
+        }
+    },
+    "inbounds": [
+        {
+            "type": "mixed",
+            "tag": "g-mx-i",
+            "listen": "::",
+            "listen_port": 9200,
+            "users": [
+                {
+                    "username": "direct",
+                    "password": "direct-?"
+                },
+                {
+                    "username": "tor",
+                    "password": "tor-?"
+                },
+                {
+                    "username": "ss",
+                    "password": "ss-?"
+                }
+            ]
+        },
+        {
+            "type": "shadowsocks",
+            "tag": "g-ss-i",
+            "listen": "::",
+            "listen_port": 9201,
+            "method": "aes-128-gcm",
+            "password": "?",
+            "users": [
+                {
+                    "name": "direct",
+                    "password": "direct-?"
+                },
+                {
+                    "name": "tor",
+                    "password": "tor-?"
+                },
+                {
+                    "name": "ss",
+                    "password": "ss-?"
+                }
+            ],
+            "multiplex": {
+                "enabled": true
+            }
+        },
+        {
+            "type": "vless",
+            "tag": "g-vs-i",
+            "listen": "::",
+            "listen_port": 9202,
+            "users": [
+                {
+                    "name": "direct",
+                    "uuid": "?"
+                },
+                {
+                    "name": "tor",
+                    "uuid": "?"
+                },
+                {
+                    "name": "ss",
+                    "uuid": "?"
+                }
+            ],
+            "tls": {
+                "enabled": true,
+                "server_name": "dobro.ru",
+                "alpn": [
+                    "h3"
+                ],
+                "certificate_path": "/etc/sing-box/cert.pem",
+                "key_path": "/etc/sing-box/key.pem"
+            },
+            "multiplex": {
+                "enabled": true
+            },
+            "transport": {
+                "type": "http",
+                "host": [
+                    "www.dobro.ru",
+                    "dobro.ru"
+                ]
+            }
+        },
+        {
+            "type": "hysteria2",
+            "tag": "g-h2-i",
+            "listen": "::",
+            "listen_port": 443,
+            "users": [
+                {
+                    "name": "direct",
+                    "password": "direct-?"
+                },
+                {
+                    "name": "tor",
+                    "password": "tor-?"
+                },
+                {
+                    "name": "ss",
+                    "password": "ss-?"
+                }
+            ],
+            "tls": {
+                "enabled": true,
+                "server_name": "dobro.ru",
+                "alpn": [
+                    "h3"
+                ],
+                "certificate_path": "/etc/sing-box/cert.pem",
+                "key_path": "/etc/sing-box/key.pem"
+            }
+        }
+    ],
+    "outbounds": [
+        {
+            "type": "direct",
+            "tag": "direct"
+        },
+        {
+            "type": "block",
+            "tag": "block"
+        },
+        {
+            "type": "socks",
+            "tag": "tor",
+            "server": "127.0.0.1",
+            "server_port": 9050,
+            "version": "5"
+        }
+    ],
+    "route": {
+        "default_domain_resolver": "cloudflare-doh",
+        "rules": [
+            {
+                "port": 53,
+                "action": "hijack-dns"
+            },
+            {
+                "inbound": [
+                    "g-mx-i",
+                    "g-ss-i",
+                    "g-vs-i",
+                    "g-h2-i"
+                ],
+                "auth_user": [
+                    "direct"
+                ],
+                "action": "route",
+                "outbound": "direct"
+            },
+            {
+                "inbound": [
+                    "g-mx-i",
+                    "g-ss-i",
+                    "g-vs-i",
+                    "g-h2-i"
+                ],
+                "auth_user": [
+                    "tor"
+                ],
+                "action": "route",
+                "outbound": "tor"
+            },
+            {
+                "inbound": [
+                    "g-mx-i",
+                    "g-ss-i",
+                    "g-vs-i",
+                    "g-h2-i"
+                ],
+                "auth_user": [
+                    "ss"
+                ],
+                "action": "route",
+                "outbound": "super-select-?"
+            }
+        ],
+        "final": "block"
+    }
+}
