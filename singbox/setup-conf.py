@@ -16,8 +16,8 @@ log = logging.getLogger("setup-conf")
 
 DEFAULT_INBOUND_PORTS: dict[str, int] = {
     "mixed": 9200,
-    "shadowsocks": 9201,
-    "vless": 9202,
+    "vless": 9201,
+    # "shadowsocks": 9202,
     "hysteria2": 443,
 }
 
@@ -256,7 +256,7 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument("host", nargs="?", default="0.0.0.0",
                    help="server IP or domain (SERVER_HOST)")
-    p.add_argument("--direct", dest="direct", action="store_true", default=True,
+    p.add_argument("--direct", dest="direct", action="store_true", default=False,
                    help="add a 'direct' account")
     p.add_argument("--no-direct", dest="direct", action="store_false",
                    help="do not add a 'direct' account")
