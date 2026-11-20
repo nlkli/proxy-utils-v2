@@ -18,7 +18,7 @@ mkdir -p data
 
 i=0
 while [ "$i" -lt 200 ]; do
-    sing-box generate rand --base64 16 >> data/passwords.txt
+    sing-box generate rand --hex 16 >> data/passwords.txt
     i=$((i + 1))
 done
 
