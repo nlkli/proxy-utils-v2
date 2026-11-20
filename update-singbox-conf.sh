@@ -2,7 +2,7 @@
 set -euo pipefail
 
 DATA_DIR="data"
-OUT_DIR="output"
+OUT_DIR="/etc/sing-box/"
 SINGBOX_DIR="./singbox"
 CERT_DOMAIN="dobro.ru"
 
@@ -69,7 +69,7 @@ sing-box check -C "$OUT_DIR"
 
 sudo systemctl restart sing-box.service
 
-sleep 15
+sleep 10
 
 rm -f "$DATA_DIR/best-selector-cache.json"
 
