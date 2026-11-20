@@ -1,7 +1,7 @@
 [
     {
         "cmd": "./update-singbox-conf.sh",
-        "repeat": "18h"
+        "repeat": "20h"
     },
     {
         "cmd": "./tor-setup.sh",
@@ -9,6 +9,6 @@
     },
     {
         "cmd": "./singbox-select-best.sh",
-        "repeat": "30m"
+        "repeat": "25m"
     }
 ]

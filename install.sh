@@ -3,7 +3,7 @@ set -e
 
 NAME="sync-proxy"
 DIR="$(cd "$(dirname "$0")" && pwd)"
-CMD="$DIR/sync-update.py"
+CMD="$DIR/sync-update.py $DIR/sync-tasks.json"
 
 [ "$(id -u)" -eq 0 ] || { echo "Run as root"; exit 1; }
 

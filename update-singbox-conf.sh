@@ -69,7 +69,7 @@ sing-box check -C "$OUT_DIR"
 
 sudo systemctl restart sing-box.service
 
-sleep 10
+sleep 15
 
 rm -f "$DATA_DIR/best-selector-cache.json"
 
