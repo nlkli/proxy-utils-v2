@@ -6,7 +6,6 @@ DIR="$(cd "$(dirname "$0")" && pwd)"
 CMD="$DIR/sync-update.py"
 
 [ "$(id -u)" -eq 0 ] || { echo "Run as root"; exit 1; }
-[ -n "$NAME" ] && [ -n "$DIR" ] && [ -n "$CMD" ] || { echo "Usage: $0 <name> <directory> <command>"; exit 1; }
 
 sudo apt install tor obfs4proxy -y
 # install sbcli https://github.com/nlkli/sbcli ...
