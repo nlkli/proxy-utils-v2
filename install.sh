@@ -8,6 +8,27 @@ CMD="$DIR/sync-update.py"
 [ "$(id -u)" -eq 0 ] || { echo "Run as root"; exit 1; }
 [ -n "$NAME" ] && [ -n "$DIR" ] && [ -n "$CMD" ] || { echo "Usage: $0 <name> <directory> <command>"; exit 1; }
 
+sudo apt install tor obfs4proxy -y
+# install sbcli https://github.com/nlkli/sbcli ...
+
+command -v sing-box >/dev/null 2>&1 || curl -fsSL https://sing-box.app/install.sh | sh
+
+mkdir -p data
+: > data/passwords.txt
+: > data/uuids.txt
+
+i=0
+while [ "$i" -lt 200 ]; do
+    sing-box generate rand --base64 16 >> data/passwords.txt
+    i=$((i + 1))
+done
+
+i=0
+while [ "$i" -lt 100 ]; do
+    sing-box generate uuid >> data/uuids.txt
+    i=$((i + 1))
+done
+
 cat > "/etc/systemd/system/$NAME.service" <<EOF
 [Unit]
 Description=$NAME
@@ -24,6 +45,10 @@ RestartSec=60
 [Install]
 WantedBy=multi-user.target
 EOF
+
+./update-singbox-conf.sh
+
+sleep 5
 
 systemctl daemon-reload
 systemctl enable --now "$NAME.service"

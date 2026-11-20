@@ -32,8 +32,35 @@ def read_tags(path: Path) -> list[str]:
     return tags
 
 
+def read_list(path: Path | None) -> list[str] | None:
+    if path is None:
+        return None
+    lines = (ln.strip() for ln in path.read_text(encoding="utf-8").splitlines())
+    return [ln for ln in lines if ln and not ln.startswith("#")]
+
+
 def _gen_password() -> str:
     return secrets.token_urlsafe(16)
+
+
+class ValuePool:
+    def __init__(self, values: list[str] | None, kind: str,
+                 gen: Callable[[], str]) -> None:
+        self._values = values
+        self._kind = kind
+        self._gen = gen
+        self._i = 0
+
+    def next(self) -> str:
+        if self._values is None:
+            return self._gen()
+        if self._i >= len(self._values):
+            raise SystemExit(
+                f"not enough {self._kind} in list: need more than {len(self._values)}"
+            )
+        value = self._values[self._i]
+        self._i += 1
+        return value
 
 
 def make_inbounds(ports: dict[str, int]) -> dict[str, dict[str, Any]]:
@@ -146,12 +173,13 @@ def make_template() -> dict[str, Any]:
     }
 
 
-def new_user(inbound_type: str, name: str) -> dict[str, str]:
+def new_user(inbound_type: str, name: str,
+             passwords: ValuePool, uuids: ValuePool) -> dict[str, str]:
     if inbound_type == "mixed":
-        return {"username": name, "password": _gen_password()}
+        return {"username": name, "password": passwords.next()}
     if inbound_type == "vless":
-        return {"name": name, "uuid": str(uuid.uuid4())}
-    return {"name": name, "password": _gen_password()}
+        return {"name": name, "uuid": uuids.next()}
+    return {"name": name, "password": passwords.next()}
 
 
 def add_route(
@@ -271,6 +299,10 @@ def parse_args() -> argparse.Namespace:
                    help="tags file for super-selector outbound")
     p.add_argument("--tor-tags", type=Path, default=Path("tor-tags.txt"),
                    help="tags file for tor outbound")
+    p.add_argument("--passwords", type=Path, default=None,
+                   help="file with passwords (one per line); generated if omitted")
+    p.add_argument("--uuids", type=Path, default=None,
+                   help="file with VLESS UUIDs (one per line); generated if omitted")
     p.add_argument("--output", type=Path, default=Path("config.json"),
                    help="server config output path")
     p.add_argument("--links", type=Path, default=Path("links.txt"),
@@ -296,12 +328,15 @@ def main() -> int:
     template = make_template()
     inbounds = make_inbounds(DEFAULT_INBOUND_PORTS)
 
+    passwords = ValuePool(read_list(args.passwords), "passwords", _gen_password)
+    uuids = ValuePool(read_list(args.uuids), "uuids", lambda: str(uuid.uuid4()))
+
     flag_values = {"mixed_http": args.mixed_http, "insecure": args.insecure}
 
     links: list[str] = []
     for name, outbound in accounts:
         for inbound_type, inb in inbounds.items():
-            user = new_user(inbound_type, name)
+            user = new_user(inbound_type, name, passwords, uuids)
             inb["users"].append(user)
             builder = LINK_BUILDERS[inbound_type]
             links += builder(inb, host, user, flag_values[LINK_FLAG[inbound_type]])
